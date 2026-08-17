@@ -34,7 +34,7 @@ def main():
     sb_kwargs = {"uc": True, "headless": False}
     
     if is_proxy:
-        # ⚠️ 【修复点】动态读取系统环境变量中的 PROXY_SERVER，兼容不同的代理端口
+        # 读取系统环境变量中的真实代理地址和端口
         proxy_str = os.environ.get("PROXY_SERVER", "socks5://127.0.0.1:1080")
         print(f"🔗 挂载代理: {proxy_str}")
         sb_kwargs["proxy"] = proxy_str
@@ -76,4 +76,8 @@ def main():
                 send_tg_message("❌", "登录失败", "")
                 
         # 账号之间间隔 10 秒
-        time.sleep(10)
+        time.sleep(10) 
+
+# 就是少了这下面两行，导致代码没被执行！
+if __name__ == '__main__':
+    main()
