@@ -32,9 +32,11 @@ def main():
 
     is_proxy = os.environ.get("IS_PROXY", "false").lower() == "true"
     sb_kwargs = {"uc": True, "headless": False}
+    
     if is_proxy:
-        proxy_str = "http://127.0.0.1:1081"
-        print(f"🔗 挂载sing-box代理: {proxy_str}")
+        # ⚠️ 【修复点】动态读取系统环境变量中的 PROXY_SERVER，兼容不同的代理端口
+        proxy_str = os.environ.get("PROXY_SERVER", "socks5://127.0.0.1:1080")
+        print(f"🔗 挂载代理: {proxy_str}")
         sb_kwargs["proxy"] = proxy_str
     else:
         print("🌐 未使用代理，直连访问")
