@@ -21,11 +21,12 @@
 
 将你的多个账号按 `邮箱/密码` 的格式填写，**一行一个**。无论密码中是否包含其他特殊字符，都会以第一个 `/` 为界限进行解析：
 
+```
 user1@gmail.com/password123
-
 user2@gmail.com/password
-
 user3@outlook.com/password789
+```
+
 ━━━━━━━━━━━━━━━━━━━━━━
 
 ### 代理格式（确认在v2rayN里使用正常的节点）
