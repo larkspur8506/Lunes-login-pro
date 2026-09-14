@@ -2,7 +2,7 @@ name: Auto-login-Lunes
 on:
   workflow_dispatch:
   schedule:
-    - cron: '10 2 */11 * *' # 每隔11天 12点(UTC 2点10) 北京时间10点10 运行
+    - cron: '0 3 */8 * *' # 每隔8天，北京时间11:00（UTC 03:00）运行
 
 jobs:
   Renew-lunes:
