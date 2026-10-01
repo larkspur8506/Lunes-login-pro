@@ -5,7 +5,6 @@ import os
 import time
 import subprocess
 import requests
-import re
 from seleniumbase import SB
 
 # 从环境变量获取账号密码和 TG 配置（保留用作兼容单账号）
@@ -15,6 +14,7 @@ TG_CHAT_ID   = os.environ.get("TG_CHAT_ID") or ""      # chat id,可选
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN") or ""    # bot token,可选
 
 LOGIN_URL = "https://betadash.lunes.host/login?next=/"
+SERVER_URL = "https://betadash.lunes.host/servers/95184"
 
 #  Telegram 推送
 def send_tg_message(status_icon, status_text, extra_text=""):
@@ -308,7 +308,7 @@ def login(sb) -> bool:
     cur_url = sb.get_current_url().split('?')[0].lower()
     page_title = sb.get_title() or ""
 
-    if "login" not in cur_url and "account" in page_title.lower():
+    if "login" not in cur_url and "betadash.lunes.host" in cur_url:
         print(f"✅ 登录成功！(URL: {sb.get_current_url()}, Title: {page_title})")
         return True
 
@@ -318,39 +318,18 @@ def login(sb) -> bool:
 
 # 访问服务器页面
 def visit_server(sb) -> (bool, dict):
-    print("🔍 正在查找服务器卡片...")
-    try:
-        sb.wait_for_element('a.server-card', timeout=15)
-    except Exception:
-        print("❌ 未找到服务器卡片（可能没有服务器）")
-        return False, {"error": "未找到服务器卡片，可能账户无服务器"}
-
-    cards = sb.find_elements('a.server-card')
-    if not cards:
-        return False, {"error": "未找到服务器卡片"}
-
-    card = cards[0]
-    href = card.get_attribute('href')
-    if not href:
-        return False, {"error": "卡片缺少 href 属性"}
-
-    match = re.search(r'/servers/(\d+)', href)
-    if not match:
-        return False, {"error": f"无法从 href 解析服务器 ID: {href}"}
-
-    server_id = match.group(1)
-    print(f"🖱️ 点击服务器卡片 (ID: {server_id})")
-    card.click()
+    print(f"🌐 直接打开服务器页面: {SERVER_URL}")
+    sb.open(SERVER_URL)
     time.sleep(3)
 
-    expected_url_prefix = f"https://betadash.lunes.host/servers/{server_id}"
-    for _ in range(10):
-        cur_url = sb.get_current_url().split('?')[0]
-        if cur_url == expected_url_prefix:
-            break
-        time.sleep(1)
-    else:
-        return False, {"server_id": server_id, "error": f"跳转后 URL 不匹配，当前: {sb.get_current_url()}"}
+    expected_url_prefix = "https://betadash.lunes.host/servers/"
+    cur_url = sb.get_current_url().split('?')[0]
+    if not cur_url.startswith(expected_url_prefix):
+        return False, {"error": f"未能停留在服务器页面,当前: {sb.get_current_url()}"}
+
+    server_id = cur_url.rstrip('/').rsplit('/', 1)[-1]
+    if not server_id.isdigit():
+        return False, {"error": f"无法从 URL 解析服务器 ID: {cur_url}"}
 
     page_title = sb.get_title() or ""
     server_name = ""
