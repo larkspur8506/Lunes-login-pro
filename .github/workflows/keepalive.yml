@@ -1,0 +1,40 @@
+name: Repository keepalive
+on:
+  schedule:
+    - cron: '17 4 1 * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/keepalive.yml'
+      - 'scripts/keepalive.sh'
+permissions:
+  contents: read
+concurrency:
+  group: repository-keepalive-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Check shell syntax and keepalive date boundaries
+        run: |
+          bash -n scripts/keepalive.sh
+          now=$(date +%s)
+          test "$(KEEPALIVE_TEST_NOW=$now KEEPALIVE_TEST_LAST=$now bash scripts/keepalive.sh)" = 'skip'
+          test "$(KEEPALIVE_TEST_NOW=$now KEEPALIVE_TEST_LAST=$((now - 30*86400)) bash scripts/keepalive.sh)" = 'commit'
+  keepalive:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Commit repository activity when needed
+        run: bash scripts/keepalive.sh
