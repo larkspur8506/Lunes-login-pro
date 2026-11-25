@@ -56,3 +56,7 @@ jobs:
               gh run delete $run_id || true
             fi
           done
+
+      - name: 🔁 Keepalive（防止 60 天无仓库活动导致 schedule 被停用）
+        if: always()
+        run: bash scripts/keepalive.sh
